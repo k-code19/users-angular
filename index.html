@@ -1,0 +1,214 @@
+<!doctype html>
+<html ng-app="testApp">
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" href="style/style.css">
+
+    <script src="script.js"></script>
+</head>
+<body ng-controller="testAppCtrl">
+<div class="container">
+
+    <div class="page-header">
+        <div class="btn-group" data-toggle="buttons-checkbox">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#add" href="#add">
+                Add a user
+            </button>
+            <button type="button" class="btn btn-primary" ng-click="show('sort')">Sort</button>
+            <button type="button" class="btn btn-primary" ng-click="show('search')">Search</button>
+        </div>
+
+        <form class="form-inline" ng-show="showSort">
+            <div class="form-group">
+                <label for="sortSelect">Sort by:</label>
+                <select ng-model="selectedForSort" ng-change="changeSort()" class="form-control" id="sortSelect">
+                    <option value="name">Name</option>
+                    <option value="username">Username</option>
+                    <option value="email">E-mail</option>
+                    <option value="address.street">Street</option>
+                    <option value="company.companyName">Company name</option>
+                </select>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-success" ng-click="changeSort('inc')" ng-class="incClass">Increase</button>
+                    <button type="button" class="btn btn-default" ng-click="changeSort('dec')" ng-class="decClass">Decrease</button>
+                </div>
+            </div>
+        </form>
+
+        <form class="form-inline" ng-show="showSearch">
+            <input type="text" class="form-control" placeholder="Name" ng-model="searchName">
+            <input type="text" class="form-control" placeholder="Username" ng-model="searchUsername">
+            <input type="text" class="form-control" placeholder="E-mail" ng-model="searchEmail">
+        </form>
+    </div>
+
+    <div class="well" ng-repeat="user in dataUsers | filter: {name: searchName, username: searchUsername, email: searchEmail} | orderBy: orderParam">
+        <div class="row">
+            <div class="col-md-3">
+                <h6>Main information</h6>
+            </div>
+            <div class="col-md-3">
+                <h6>Address</h6>
+            </div>
+            <div class="col-md-3">
+                <h6>Company</h6>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-1 name">Name: </div>
+            <div class="col-md-2">{{user.name}}</div>
+            <div class="col-md-1 name">Street: </div>
+            <div class="col-md-2">{{user.address.street}}</div>
+            <div class="col-md-2 name">Company name: </div>
+            <div class="col-md-4">{{user.company.name}}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-1 name">Userame: </div>
+            <div class="col-md-2">{{user.username}}</div>
+            <div class="col-md-1 name">Suite: </div>
+            <div class="col-md-2">{{user.address.suite}}</div>
+            <div class="col-md-2 name">Catch phrase: </div>
+            <div class="col-md-4">{{user.company.catchPhrase}}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-1 name">E-mail: </div>
+            <div class="col-md-2">{{user.email}}</div>
+            <div class="col-md-1 name">City: </div>
+            <div class="col-md-2">{{user.address.city}}</div>
+            <div class="col-md-2 name">BS: </div>
+            <div class="col-md-4">{{user.company.bs}}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-1 name">Phone: </div>
+            <div class="col-md-2">{{user.phone}}</div>
+            <div class="col-md-1 name">Zipcode: </div>
+            <div class="col-md-2">{{user.address.zipcode}}</div>
+        </div>
+        <div class="row">
+            <div class="col-md-1 name">Web site: </div>
+            <div class="col-md-2">{{user.website}}</div>
+            <div class="col-md-1 name">Distance: </div>
+            <div class="col-md-2" ng-cloak>{{convertM(calcDistance(user.address.geo.lat, user.address.geo.lng, lat, lon))}}</div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="add" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 class="modal-title text-uppercase" id="myModalLabel">Add a user</h3>
+                </div>
+                <form class="form-horizontal" name="addForm" novalidate ng-submit="addNewUser(newUser)">
+                    <div class="modal-body">
+                        <h4>Main information</h4><hr>
+                        <div class="form-group">
+                            <label for="name" class="col-md-3 control-label">Name</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" id="name" name="name" placeholder="Name" ng-model="newUser.name" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="username" class="col-md-3 control-label">Username</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" id="username" name="username" placeholder="Username" ng-model="newUser.username" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="email" class="col-md-3 control-label">E-mail</label>
+                            <div class="col-md-9">
+                                <input type="email" class="form-control" id="email" name="email" placeholder="E-mail" ng-model="newUser.email" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone" class="col-md-3 control-label">Phone number</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" id="phone" name="phone" ng-pattern="/^\(\d{3}\) \d{3}-\d{4}$/" ng-model="newUser.phone" placeholder="Phone number (ııı) ııı-ıııı">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="website" class="col-md-3 control-label">Web site</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" id="website" name="website" ng-pattern="/^[a-z0-9-]+\.[a-z0-9-]+$/i" ng-model="newUser.website" placeholder="Web site">
+                            </div>
+                        </div>
+
+                        <h4>Address</h4><br>
+                        <div class="form-group">
+                            <label for="street" class="col-md-3 control-label">Street</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" id="street" name="street" ng-model="newUser.street" placeholder="Street">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="suite" class="col-md-3 control-label">Suite</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" id="suite" name="suite" ng-model="newUser.suite" placeholder="Suite">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="city" class="col-md-3 control-label">City</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" id="city" name="city" ng-model="newUser.city" placeholder="City">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="zipcode" class="col-md-3 control-label">Zip code</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" id="zipcode" name="zipcode" ng-model="newUser.zipcode" placeholder="Zip code">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="lat" class="col-md-3 control-label">Latitude</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" id="lat" name="lat" ng-model="newUser.lat" placeholder="Latitude">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="lng" class="col-md-3 control-label">Longitude</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" id="lng" name="lng" ng-model="newUser.lng" placeholder="Longitude">
+                            </div>
+                        </div>
+
+                        <h4>Company</h4><br>
+                        <div class="form-group">
+                            <label for="companyName" class="col-md-3 control-label">Name</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" id="companyName" name="companyName" ng-model="newUser.company.name" placeholder="Name" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="catchPhrase" class="col-md-3 control-label">Catch phrase</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" id="catchPhrase" name="catchPhrase" ng-model="newUser.company.catchPhrase" placeholder="Catch phrase">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="bs" class="col-md-3 control-label">BS</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" id="bs" name="bs" ng-model="newUser.company.bs" placeholder="BS">
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-primary btn-lg btn-block" name="ok" ng-disabled="addForm.$invalid">Œ </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="reset" class="btn btn-primary btn-lg btn-block" data-dismiss="modal">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+</body>
+</html>
